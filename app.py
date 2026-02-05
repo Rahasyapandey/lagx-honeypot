@@ -5,11 +5,9 @@ import re
 app = Flask(__name__)
 CORS(app)
 
-# YOUR API KEY
 SECRET_API_KEY = "lagx_sk_abc123xyz789"
 
 def extract_urls(text):
-    """Extract URLs from text"""
     try:
         url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
         urls = re.findall(url_pattern, text)
@@ -18,7 +16,6 @@ def extract_urls(text):
         return []
 
 def extract_emails(text):
-    """Extract email addresses"""
     try:
         email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         emails = re.findall(email_pattern, text)
@@ -27,7 +24,6 @@ def extract_emails(text):
         return []
 
 def extract_phones(text):
-    """Extract phone numbers"""
     try:
         phone_pattern = r'[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}'
         phones = re.findall(phone_pattern, text)
@@ -35,10 +31,5 @@ def extract_phones(text):
     except:
         return []
 
-@app.route("/", methods=["GET"])
-def home():
-    """Health check"""
-    return jsonify({
-        "status": "online",
-        "service": "Team LagX Honey
+@app
 
