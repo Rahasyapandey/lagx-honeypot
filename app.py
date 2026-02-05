@@ -1,37 +1,44 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import re
 
 app = Flask(__name__)
 CORS(app)
 
-# YOUR API KEY (this is what you will submit)
+# YOUR API KEY
 SECRET_API_KEY = "lagx_sk_abc123xyz789"
 
-@app.route("/analyze", methods=["POST"])
-def analyze():
-    api_key = request.headers.get("x-api-key")
+def extract_urls(text):
+    """Extract URLs from text"""
+    try:
+        url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
+        urls = re.findall(url_pattern, text)
+        return [{"type": "url", "value": url, "risk": "high"} for url in urls]
+    except:
+        return []
 
-    if api_key != SECRET_API_KEY:
-        return jsonify({"error": "Invalid API key"}), 401
+def extract_emails(text):
+    """Extract email addresses"""
+    try:
+        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        emails = re.findall(email_pattern, text)
+        return [{"type": "email", "value": email, "risk": "medium"} for email in emails]
+    except:
+        return []
 
-    data = request.get_json()
-    message = data.get("message", "")
+def extract_phones(text):
+    """Extract phone numbers"""
+    try:
+        phone_pattern = r'[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}'
+        phones = re.findall(phone_pattern, text)
+        return [{"type": "phone", "value": phone, "risk": "medium"} for phone in phones]
+    except:
+        return []
 
-    message = message.lower()
-
-    threat_level = "low"
-
-    if "urgent" in message or "verify" in message or "password" in message:
-        threat_level = "high"
-
-    if "bitcoin" in message or "crypto" in message or "investment" in message:
-        threat_level = "critical"
-
+@app.route("/", methods=["GET"])
+def home():
+    """Health check"""
     return jsonify({
-        "threat_level": threat_level,
-        "extracted_entities": []
-    })
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+        "status": "online",
+        "service": "Team LagX Honey
 
