@@ -60,6 +60,7 @@ def analyze():
             "extracted_entities": []
         }), 200
 
+    # CORRECT WAY to get text from nested JSON
     message = data.get("message", {})
     text = message.get("text", "")
 
@@ -67,7 +68,7 @@ def analyze():
     if not isinstance(text, str):
         text = str(text)
 
-    # Convert to lower case for keyword matching, but keep original for extraction if needed
+    # Convert to lower case for keyword matching
     text_lower = text.lower()
 
     # 3. Determine Threat Level
@@ -81,7 +82,7 @@ def analyze():
     if any(keyword in text_lower for keyword in ["bitcoin", "crypto", "investment"]):
         threat_level = "critical"
 
-    # 4. Extract Entities (Actually calling the functions now)
+    # 4. Extract Entities
     results = []
     results.extend(extract_urls(text))
     results.extend(extract_emails(text))
@@ -95,6 +96,7 @@ def analyze():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
