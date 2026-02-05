@@ -8,6 +8,7 @@ CORS(app)
 # YOUR API KEY
 SECRET_API_KEY = "lagx_sk_abc123xyz789"
 
+# --- Helper Functions ---
 def extract_urls(text):
     """Extract URLs from text"""
     try:
@@ -45,23 +46,56 @@ def home():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    """Main analysis endpoint"""
-    data = request.json
-    text = data.get("text", "")
-    
+    # 1. Authentication Check
+    api_key = request.headers.get("x-api-key")
+
+    if api_key != SECRET_API_KEY:
+        return jsonify({"error": "Invalid API key"}), 401
+
+    # 2. Parse Data
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({
+            "threat_level": "low",
+            "extracted_entities": []
+        }), 200
+
+    message = data.get("message", {})
+    text = message.get("text", "")
+
+    # Safety check to ensure text is a string
+    if not isinstance(text, str):
+        text = str(text)
+
+    # Convert to lower case for keyword matching, but keep original for extraction if needed
+    text_lower = text.lower()
+
+    # 3. Determine Threat Level
+    threat_level = "low"
+
+    # High risk keywords
+    if any(keyword in text_lower for keyword in ["urgent", "verify", "password", "blocked"]):
+        threat_level = "high"
+
+    # Critical risk keywords
+    if any(keyword in text_lower for keyword in ["bitcoin", "crypto", "investment"]):
+        threat_level = "critical"
+
+    # 4. Extract Entities (Actually calling the functions now)
     results = []
     results.extend(extract_urls(text))
     results.extend(extract_emails(text))
     results.extend(extract_phones(text))
-    
+
+    # 5. Return Single, Correct JSON Response
     return jsonify({
-        "api_key": SECRET_API_KEY,
-        "results": results,
-        "count": len(results)
-    })
+        "threat_level": threat_level,
+        "extracted_entities": results
+    }), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
